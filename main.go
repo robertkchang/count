@@ -1,42 +1,42 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
-	"sync"
+  "fmt"
+  "io/ioutil"
+  "sync"
 )
 
 func main() {
-	fmt.Println("=======================")
+  fmt.Println("=======================")
 
-	fileChannel := make(chan string, 1)
-	quitChannelArr := make([]chan bool, 10)
+  fileChannel := make(chan string, 1)
+  quitChannelArr := make([]chan bool, 10)
 
-	waiter := &sync.WaitGroup{}
-	waiter.Add(10)
+  waiter := &sync.WaitGroup{}
+  waiter.Add(10)
 
-	for workerIdx := 0; workerIdx < 10; workerIdx++ {
-		worker := Worker{id: workerIdx, quitChannel: quitChannelArr[workerIdx]}
+  for workerIdx := 0; workerIdx < 10; workerIdx++ {
+    worker := Worker{id: workerIdx, quitChannel: quitChannelArr[workerIdx]}
 
-		fmt.Printf("Starting worker #%d\n", worker.id)
-		worker.Start(fileChannel, waiter)
-	}
+    fmt.Printf("Starting worker #%d\n", worker.id)
+    worker.Start(fileChannel, waiter)
+  }
 
-	// iterate through files in directory /files
-	textFiles, _ := ioutil.ReadDir("./files")
-	for _, f := range textFiles {
-		fileChannel <- f.Name()
-		// time.Sleep(1000 * time.Millisecond)
-	}
+  // iterate through files in directory /files
+  textFiles, _ := ioutil.ReadDir("./files")
+  for _, f := range textFiles {
+    fileChannel <- f.Name()
+    // time.Sleep(1000 * time.Millisecond)
+  }
 
-	waiter.Wait()
-	fmt.Println("\n\nAll workers have shutdown!")
+  waiter.Wait()
+  fmt.Println("\n\nAll workers have shutdown!")
 
-	fmt.Println("=======================")
+  fmt.Println("=======================")
 }
 
 func checkFile(e error) {
-	if e != nil {
-		panic(e)
-	}
+  if e != nil {
+    panic(e)
+  }
 }
