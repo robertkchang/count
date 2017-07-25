@@ -5,7 +5,6 @@ import (
   "fmt"
   "io/ioutil"
   "os"
-  "regexp"
   "strconv"
   "strings"
   "sync"
@@ -47,14 +46,11 @@ func countWordsInFile(fileName string) int {
   content, err := ioutil.ReadAll(reader)
   if err != nil {
     fmt.Println("error reading file " + fileName)
-    // break
   }
 
   contentStr := string(content)
-  re := regexp.MustCompile(`\r?\n`)
-  contentStrSanNewline := strings.Replace(re.ReplaceAllString(contentStr, ":"), "::", " ", -1)
-  contentWords := strings.Split(string(contentStrSanNewline), " ")
+  words := strings.Fields(contentStr)
 
   file.Close()
-  return len(contentWords)
+  return len(words)
 }

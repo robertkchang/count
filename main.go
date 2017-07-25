@@ -25,7 +25,6 @@ func main() {
   textFiles, _ := ioutil.ReadDir("./files")
   for _, f := range textFiles {
     fileChannel <- f.Name()
-    // time.Sleep(1000 * time.Millisecond)
   }
 
   waiter.Wait()
