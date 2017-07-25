@@ -8,25 +8,34 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
-// Worker new
-func Worker(channelQuit chan int, workQueue chan string) {
-	select {
-	case <-channelQuit:
-		// add code to shutdown Go routine
+// Worker struct
+type Worker struct {
+	id          int
+	quitChannel chan bool
+}
 
-	case fileName := <-workQueue:
-		count := countWordsInFile(fileName)
-		fmt.Println(fileName + ": " + strconv.Itoa(count))
+// Start worker
+func (worker Worker) Start(fileChannel chan string, waiter *sync.WaitGroup) {
+	go func() {
+		for {
+			fmt.Printf("Worker #%d waiting ...\n", worker.id)
+			select {
+			case fileName := <-fileChannel:
+				fmt.Printf("Worker #%d counting file "+fileName+"\n", worker.id)
+				count := countWordsInFile(fileName)
+				fmt.Println(fileName + ": " + strconv.Itoa(count))
 
-	case <-time.After(5 * time.Second):
-		fmt.Println("Worker timeout after 5 seconds of inactivity")
-		channelQuit <- -1
-		// waited 30 seconds and nothing happened
-		// report this and exit
-	}
+			case <-time.After(5 * time.Second):
+				fmt.Printf("Worker #%d timeout after 5 seconds of inactivity. Quiting ...\n", worker.id)
+				waiter.Done()
+				return
+			}
+		}
+	}()
 }
 
 func countWordsInFile(fileName string) int {

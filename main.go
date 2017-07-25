@@ -1,43 +1,36 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"regexp"
-	"strconv"
-	"strings"
+	"sync"
 )
 
 func main() {
 	fmt.Println("=======================")
 
+	fileChannel := make(chan string, 1)
+	quitChannelArr := make([]chan bool, 10)
+
+	waiter := &sync.WaitGroup{}
+	waiter.Add(10)
+
+	for workerIdx := 0; workerIdx < 10; workerIdx++ {
+		worker := Worker{id: workerIdx, quitChannel: quitChannelArr[workerIdx]}
+
+		fmt.Printf("Starting worker #%d\n", worker.id)
+		worker.Start(fileChannel, waiter)
+	}
+
 	// iterate through files in directory /files
 	textFiles, _ := ioutil.ReadDir("./files")
 	for _, f := range textFiles {
-		fileName := f.Name()
-
-		// read file
-		file, err := os.Open("./files/" + fileName)
-		checkFile(err)
-
-		reader := bufio.NewReader(file)
-
-		content, err := ioutil.ReadAll(reader)
-		if err != nil {
-			fmt.Println("error reading file " + fileName)
-			// break
-		}
-
-		contentStr := string(content)
-		re := regexp.MustCompile(`\r?\n`)
-		contentStrSanNewline := strings.Replace(re.ReplaceAllString(contentStr, ":"), "::", " ", -1)
-
-		contentWords := strings.Split(string(contentStrSanNewline), " ")
-		fmt.Println(fileName + ": " + strconv.Itoa(len(contentWords)))
-		file.Close()
+		fileChannel <- f.Name()
+		// time.Sleep(1000 * time.Millisecond)
 	}
+
+	waiter.Wait()
+	fmt.Println("\n\nAll workers have shutdown!")
 
 	fmt.Println("=======================")
 }
