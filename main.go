@@ -10,13 +10,12 @@ func main() {
   fmt.Println("=======================")
 
   fileChannel := make(chan string, 1)
-  quitChannelArr := make([]chan bool, 10)
 
   waiter := &sync.WaitGroup{}
   waiter.Add(10)
 
   for workerIdx := 0; workerIdx < 10; workerIdx++ {
-    worker := Worker{id: workerIdx, quitChannel: quitChannelArr[workerIdx]}
+    worker := Worker{id: workerIdx}
 
     fmt.Printf("Starting worker #%d\n", worker.id)
     worker.Start(fileChannel, waiter)

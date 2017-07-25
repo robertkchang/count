@@ -14,8 +14,7 @@ import (
 
 // Worker struct
 type Worker struct {
-  id          int
-  quitChannel chan bool
+  id int
 }
 
 // Start worker
